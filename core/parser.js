@@ -109,33 +109,94 @@ const Parser = (() => {
   };
 
   // ── MAIN PARSE FUNCTION ──
-  // Input:  raw code string (multiline)
-  // Output: array of task objects
+  // ── MAIN PARSE FUNCTION ──
   const parse = (code) => {
     resetId();
-
     if (!code || typeof code !== 'string') return [];
 
-    const lines = code.split('\n');
-    const tasks = [];
+    const lines  = code.split('\n');
+    const tasks  = [];
+
+    // track nesting context to detect deferred (callback) tasks
+    let insideSetTimeout  = false;
+    let insidePromiseThen = false;
+    let braceDepth        = 0;
+    let contextStack      = []; // stack of active contexts
 
     lines.forEach((line, index) => {
+      const trimmed = line.trim();
+      if (!trimmed || trimmed.startsWith('//')) return;
+
+      // ── track brace depth for context detection ──
+      const openBraces  = (trimmed.match(/\{/g) || []).length;
+      const closeBraces = (trimmed.match(/\}/g) || []).length;
+
+      // detect entering a setTimeout callback
+      if (/setTimeout\s*\(/.test(trimmed)) {
+        contextStack.push('macrotask');
+      }
+
+      // detect entering a .then / .catch / Promise callback
+      if (/\.then\s*\(|\.catch\s*\(|\.finally\s*\(|new\s+Promise\s*\(/.test(trimmed)) {
+        contextStack.push('microtask');
+      }
+
+      const currentContext = contextStack[contextStack.length - 1] || null;
+
       const type = classifyLine(line);
-      if (!type) return; // skip blanks, comments, noise
+      if (!type) {
+        braceDepth += openBraces - closeBraces;
+        if (closeBraces > 0 && contextStack.length > 0) {
+          // rough heuristic: pop context when we close a brace
+          if (braceDepth <= contextStack.length - 1) {
+            contextStack.pop();
+          }
+        }
+        return;
+      }
+
+      // ── determine effective queue ──
+      // if this task lives inside a callback, it is deferred
+      let effectiveQueue = null;
+      let effectiveType  = type;
+
+      if (currentContext === 'macrotask') {
+        // task is inside setTimeout — it only runs when that macro fires
+        effectiveQueue = type === 'microtask' ? 'microtask' : 'macrotask';
+        effectiveType  = type;
+      } else if (currentContext === 'microtask') {
+        // task is inside .then — it is itself a microtask or nested macro
+        effectiveQueue = type === 'macrotask' ? 'macrotask' : 'microtask';
+        effectiveType  = type;
+      } else {
+        effectiveQueue = type === 'sync'      ? 'callStack'
+                       : type === 'microtask' ? 'microtask'
+                       : 'macrotask';
+        effectiveType = type;
+      }
 
       tasks.push({
-        id:        nextId(),           // unique number e.g. 1, 2, 3
-        type:      type,               // 'sync' | 'microtask' | 'macrotask'
-        queue:     queueFor(type),     // 'callStack' | 'microtask' | 'macrotask'
-        label:     extractLabel(line), // display text for the card
-        raw:       line.trim(),        // original line (used for console eval)
-        lineIndex: index,              // which line in the original code
-        status:    'pending',          // 'pending' | 'executing' | 'done'
+        id:        nextId(),
+        type:      effectiveType,
+        queue:     effectiveQueue,
+        label:     extractLabel(line),
+        raw:       trimmed,
+        lineIndex: index,
+        status:    'pending',
+        context:   currentContext,   // null | 'microtask' | 'macrotask'
       });
+
+      braceDepth += openBraces - closeBraces;
+      if (closeBraces > 0 && contextStack.length > 0) {
+        if (braceDepth <= contextStack.length - 1) {
+          contextStack.pop();
+        }
+      }
     });
 
     return tasks;
   };
+
 
   // ── PUBLIC API ──
   return {

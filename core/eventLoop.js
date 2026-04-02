@@ -67,71 +67,74 @@ const EventLoop = (() => {
   };
 
   // ── SINGLE TICK ──
-  // This is the core event loop algorithm
-  // Returns a status object describing what happened this tick
+  // ── SINGLE TICK ──
   const tick = () => {
     _tickCount++;
 
     // ── PHASE 1: Call Stack ──
-    // If anything is on the call stack, run it first
     if (!CallStack.isEmpty()) {
       const task = CallStack.pop();
       executeTask(task);
 
       if (_onTick) _onTick({
-        phase:   'callStack',
+        phase:  'callStack',
         task,
-        tick:    _tickCount,
-        log:     [..._log],
-        stacks:  _snapshot(),
+        tick:   _tickCount,
+        log:    [..._log],
+        stacks: _snapshot(),
       });
       return { phase: 'callStack', task, done: false };
     }
 
     // ── PHASE 2: Microtask Queue ──
-    // Drain ALL microtasks before touching macrotasks
-    // This loops until microtask queue is completely empty
+    // Process ONE microtask at a time in a while loop
+    // This correctly handles microtasks queued DURING the drain
+    // e.g. Promise.resolve().then(() => { Promise.resolve().then(...) })
+    // The inner promise gets queued mid-drain and must run before macrotasks
     if (!MicrotaskQueue.isEmpty()) {
       const drained = [];
 
+      // keep dequeuing one at a time — new microtasks added during
+      // execution will be caught by the next isEmpty() check
       while (!MicrotaskQueue.isEmpty()) {
         const task = MicrotaskQueue.dequeue();
         executeTask(task);
         drained.push(task);
-        _tickCount++;
       }
 
       if (_onTick) _onTick({
-        phase:   'microtask',
-        tasks:   drained,
-        tick:    _tickCount,
-        log:     [..._log],
-        stacks:  _snapshot(),
+        phase:  'microtask',
+        tasks:  drained,
+        tick:   _tickCount,
+        log:    [..._log],
+        stacks: _snapshot(),
       });
       return { phase: 'microtask', tasks: drained, done: false };
     }
 
     // ── PHASE 3: Macrotask Queue ──
-    // Take exactly ONE macrotask per tick
+    // ONE macrotask per tick, then re-check microtasks next tick
     if (!MacrotaskQueue.isEmpty()) {
       const task = MacrotaskQueue.dequeue();
       executeTask(task);
 
+      // after a macrotask runs, its inner tasks need to be queued
+      // executeTask handles this via the parser on the raw line
       if (_onTick) _onTick({
-        phase:   'macrotask',
+        phase:  'macrotask',
         task,
-        tick:    _tickCount,
-        log:     [..._log],
-        stacks:  _snapshot(),
+        tick:   _tickCount,
+        log:    [..._log],
+        stacks: _snapshot(),
       });
       return { phase: 'macrotask', task, done: false };
     }
 
-    // ── PHASE 4: All queues empty — loop is idle ──
+    // ── PHASE 4: Idle ──
     _running = false;
     if (_onDone) _onDone({
-      tick:  _tickCount,
-      log:   [..._log],
+      tick: _tickCount,
+      log:  [..._log],
     });
     return { phase: 'idle', done: true };
   };
