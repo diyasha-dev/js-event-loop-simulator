@@ -16,6 +16,7 @@ const Renderer = (() => {
     btnReset:       () => document.getElementById('btn-reset'),
     speedSlider:    () => document.getElementById('speed-slider'),
     speedLabel:     () => document.getElementById('speed-label'),
+    exampleSelect:  () => document.getElementById('example-select'),
   };
 
   // ── CREATE A TASK CARD ──
@@ -217,8 +218,8 @@ const Renderer = (() => {
       writeSystem(`✓ loop complete — ${data.tick} ticks`);
     });
 
-    // ── RUN BUTTON ──
-    els.btnRun().addEventListener('click', () => {
+    
+    els.btnRun().addEventListener('click', async () => {
       const code = els.codeInput().value.trim();
       if (!code) {
         writeSystem('⚠ no code to run — type something above');
@@ -226,43 +227,32 @@ const Renderer = (() => {
       }
       clearAll();
       setButtonState('running');
-
-      // show initial queue state before first tick
-      const count = EventLoop.load(code);
-      if (count === 0) {
-        writeSystem('⚠ no recognizable tasks found');
-        setButtonState('idle');
-        return;
-      }
-
-      renderQueues(EventLoop.snapshot());
-      writeSystem(`▶ loaded ${count} tasks`);
-      EventLoop.run(code);
+      await EventLoop.run(code);
     });
 
     // ── STEP BUTTON ──
-    els.btnStep().addEventListener('click', () => {
+    els.btnStep().addEventListener('click', async () => {
       const code = els.codeInput().value.trim();
       if (!code) {
         writeSystem('⚠ no code to run — type something above');
         return;
       }
 
-      // first step — load and show initial state
-      if (EventLoop.getTickCount() === 0) {
+      // first click — load and show initial queue state
+      if (EventLoop.getTickCount() === 0 && !EventLoop.isRunning()) {
         clearAll();
-        const count = EventLoop.load(code);
-        if (count === 0) {
-          writeSystem('⚠ no recognizable tasks found');
-          return;
-        }
+        await EventLoop.step(code);
         renderQueues(EventLoop.snapshot());
-        writeSystem(`▶ loaded ${count} tasks — click Step to advance`);
+        writeSystem('▶ loaded — click Step to advance one tick');
         return;
       }
 
-      EventLoop.step(code);
+      // subsequent clicks — advance one tick
+      if (EventLoop.isRunning()) {
+        EventLoop.tick();
+      }
     });
+
 
     // ── RESET BUTTON ──
     els.btnReset().addEventListener('click', () => {
@@ -272,15 +262,81 @@ const Renderer = (() => {
     });
 
     // ── SPEED SLIDER ──
+    // els.speedSlider().addEventListener('input', (e) => {
+    //   const val = Number(e.target.value);
+    //   EventLoop.setSpeed(val);
+    //   els.speedLabel().textContent = val;
+    // });
+
+    // ── SPEED SLIDER ──
     els.speedSlider().addEventListener('input', (e) => {
       const val = Number(e.target.value);
       EventLoop.setSpeed(val);
       els.speedLabel().textContent = val;
     });
 
+    // ── EXAMPLE SELECTOR ──
+    const examples = {
+      basic: `console.log('sync 1');
+console.log('sync 2');
+setTimeout(() => console.log('macro 1'), 0);
+Promise.resolve().then(() => console.log('micro 1'));
+console.log('sync 3');`,
+
+      promises: `setTimeout(() => console.log('timeout'), 0);
+Promise.resolve().then(() => console.log('promise 1'));
+Promise.resolve().then(() => console.log('promise 2'));
+Promise.resolve().then(() => console.log('promise 3'));`,
+
+      mixed: `console.log('1');
+setTimeout(() => console.log('2'), 0);
+Promise.resolve().then(() => console.log('3'));
+setTimeout(() => console.log('4'), 0);
+Promise.resolve().then(() => console.log('5'));
+console.log('6');`,
+
+      nested: `console.log('Start');
+setTimeout(() => console.log('Timeout 1'), 0);
+Promise.resolve().then(() => {
+  console.log('Promise 1');
+  Promise.resolve().then(() => {
+    console.log('Promise 1.1');
+  });
+  setTimeout(() => console.log('Timeout 1.1'), 0);
+});
+Promise.resolve().then(() => {
+  console.log('Promise 2');
+});
+console.log('Middle');
+setTimeout(() => {
+  console.log('Timeout 2');
+  Promise.resolve().then(() => {
+    console.log('Promise inside Timeout 2');
+  });
+}, 0);
+console.log('End');`,
+    };
+
+    const exampleSelect = els.exampleSelect();
+    if (exampleSelect) {
+      exampleSelect.addEventListener('change', (e) => {
+        const key = e.target.value;
+        if (!key || !examples[key]) return;
+        els.codeInput().value = examples[key];
+        EventLoop.reset();
+        clearAll();
+        writeSystem(`loaded example: ${key} — press Run`);
+        e.target.value = '';
+      });
+    }
+
     // ── initial render ──
     clearAll();
     writeSystem('ready — type code above and press Run');
+
+    // ── initial render ──
+    // clearAll();
+    // writeSystem('ready — type code above and press Run');
   };
 
   // ── PUBLIC API ──

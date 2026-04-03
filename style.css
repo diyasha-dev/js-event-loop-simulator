@@ -479,3 +479,44 @@ header h1 {
   box-shadow: 0 0 6px rgba(52, 211, 153, 0.6);
   animation: pulse 1s ease-in-out infinite;
 }
+/* .example-select {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  background: var(--bg-panel);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-light);
+  border-radius: 6px;
+  padding: 6px 10px;
+  cursor: pointer;
+  outline: none;
+  margin-left: 8px;
+}
+
+.example-select:hover {
+  border-color: var(--purple-dim);
+  color: var(--text-primary);
+} */
+
+
+.example-select {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  background: var(--bg-panel);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-light);
+  border-radius: 6px;
+  padding: 6px 10px;
+  cursor: pointer;
+  outline: none;
+  margin-left: 8px;
+}
+
+.example-select:hover {
+  border-color: var(--purple-dim);
+  color: var(--text-primary);
+}
+
+.example-select option {
+  background: var(--bg-panel);
+  color: var(--text-primary);
+}

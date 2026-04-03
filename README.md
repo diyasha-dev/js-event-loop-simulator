@@ -1,1 +1,1 @@
-ami bolod
+ami bolodit 
