@@ -150,6 +150,20 @@ header h1 {
   color: var(--purple);
   min-width: 12px;
 }
+/* ── SHORTCUTS BAR ── */
+.shortcuts-bar {
+  display: flex;
+  gap: 16px;
+  padding: 5px 16px;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border);
+  font-size: 10px;
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+  flex-shrink: 0;
+}
+
+/* ── MAIN GRID ── */
 
 /* ── MAIN GRID ── */
 .main-grid {
@@ -251,6 +265,17 @@ header h1 {
 .input-panel textarea:focus {
   background: #0a0d14;
 }
+/* .shortcuts-bar {
+  display: flex;
+  gap: 16px;
+  padding: 5px 16px;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border);
+  font-size: 10px;
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+  flex-shrink: 0;
+} */
 
 /* ── QUEUES AREA ── */
 .queues-area {
@@ -425,7 +450,7 @@ header h1 {
 }
 
 /* ── RESPONSIVE (tablets) ── */
-@media (max-width: 768px) {
+/* @media (max-width: 768px) {
   .main-grid {
     grid-template-columns: 1fr;
     grid-template-rows: 200px 1fr 180px;
@@ -448,7 +473,76 @@ header h1 {
     grid-row: 3;
   }
   
+} */
+
+@media (max-width: 768px) {
+  body {
+    overflow: auto;
+  }
+
+  .main-grid {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto;
+    height: auto;
+  }
+
+  .input-panel {
+    grid-column: 1;
+    grid-row: 1;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+    min-height: 180px;
+  }
+
+  .input-panel textarea {
+    min-height: 160px;
+  }
+
+  .queues-area {
+    grid-column: 1;
+    grid-row: 2;
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto;
+    height: auto;
+  }
+
+  .queue-panel {
+    min-height: 120px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .console-panel {
+    grid-column: 1;
+    grid-row: 3;
+    min-height: 160px;
+  }
+
+  .toolbar {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .speed-control {
+    margin-left: 0;
+    width: 100%;
+    border-top: 1px solid var(--border);
+    padding-top: 8px;
+  }
+
+  .tick-counter {
+    border-left: none;
+    padding-left: 0;
+  }
+
+  header h1 {
+    font-size: 13px;
+  }
+
+  .shortcuts-bar {
+    display: none;
+  }
 }
+
 /* ── SYSTEM LOG LINE ── */
 .console-line.system {
   color: var(--text-muted);
@@ -515,8 +609,82 @@ header h1 {
   border-color: var(--purple-dim);
   color: var(--text-primary);
 }
-
 .example-select option {
   background: var(--bg-panel);
   color: var(--text-primary);
+}
+.tick-counter {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--text-muted);
+  padding: 0 12px;
+  border-left: 1px solid var(--border);
+}
+
+.tick-counter span:last-child {
+  color: var(--purple);
+  font-weight: 500;
+  min-width: 20px;
+}
+
+/* ── ACTIVE PANEL GLOW ── */
+.queue-panel {
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+  border: 1px solid transparent;
+}
+
+.queue-panel.active-callstack {
+  border-color: var(--green);
+  box-shadow: 0 0 12px rgba(52, 211, 153, 0.15);
+}
+
+.queue-panel.active-microtask {
+  border-color: var(--yellow);
+  box-shadow: 0 0 12px rgba(251, 191, 36, 0.15);
+}
+
+.queue-panel.active-macrotask {
+  border-color: var(--red);
+  box-shadow: 0 0 12px rgba(248, 113, 113, 0.15);
+}
+
+/* ── PHASE LABEL in toolbar ── */
+.phase-label {
+  font-size: 10px;
+  padding: 4px 10px;
+  border-radius: 4px;
+  border: 1px solid var(--border-light);
+  color: var(--text-muted);
+  background: var(--bg-panel);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  transition: all 0.2s ease;
+  min-width: 110px;
+  text-align: center;
+}
+
+.phase-label.phase-callstack {
+  color: var(--green);
+  border-color: var(--green);
+  background: rgba(52, 211, 153, 0.08);
+}
+
+.phase-label.phase-microtask {
+  color: var(--yellow);
+  border-color: var(--yellow);
+  background: rgba(251, 191, 36, 0.08);
+}
+
+.phase-label.phase-macrotask {
+  color: var(--red);
+  border-color: var(--red);
+  background: rgba(248, 113, 113, 0.08);
+}
+
+.phase-label.phase-idle {
+  color: var(--text-muted);
+  border-color: var(--border-light);
+  background: var(--bg-panel);
 }

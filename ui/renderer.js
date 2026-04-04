@@ -1,6 +1,4 @@
 // ui/renderer.js
-// Reads tick events from EventLoop and updates the DOM
-// Creates cards, animates them, writes to console panel
 
 const Renderer = (() => {
 
@@ -16,14 +14,13 @@ const Renderer = (() => {
     btnReset:       () => document.getElementById('btn-reset'),
     speedSlider:    () => document.getElementById('speed-slider'),
     speedLabel:     () => document.getElementById('speed-label'),
-    exampleSelect:  () => document.getElementById('example-select'),
   };
 
   // ── CREATE A TASK CARD ──
   const createCard = (task) => {
     const card = document.createElement('div');
-    card.className = `task-card ${task.type}`;
-    card.id        = `card-${task.id}`;
+    card.className   = `task-card ${task.type}`;
+    card.id          = `card-${task.id}`;
     card.textContent = task.label;
     return card;
   };
@@ -42,46 +39,35 @@ const Renderer = (() => {
   };
 
   // ── RENDER ALL THREE QUEUES ──
-  // Called after every tick with the latest snapshot
   const renderQueues = (snapshot) => {
     const { callStack, microtask, macrotask } = snapshot;
 
-    // ── Call Stack ──
     const csBody = els.callStackBody();
     clearBody(csBody);
     if (callStack.length === 0) {
       showEmptyHint(csBody, 'Empty');
     } else {
-      callStack.forEach(task => {
-        csBody.appendChild(createCard(task));
-      });
+      callStack.forEach(task => csBody.appendChild(createCard(task)));
     }
 
-    // ── Microtask Queue ──
     const mtBody = els.microtaskBody();
     clearBody(mtBody);
     if (microtask.length === 0) {
       showEmptyHint(mtBody, 'Empty');
     } else {
-      microtask.forEach(task => {
-        mtBody.appendChild(createCard(task));
-      });
+      microtask.forEach(task => mtBody.appendChild(createCard(task)));
     }
 
-    // ── Macrotask Queue ──
     const macBody = els.macrotaskBody();
     clearBody(macBody);
     if (macrotask.length === 0) {
       showEmptyHint(macBody, 'Empty');
     } else {
-      macrotask.forEach(task => {
-        macBody.appendChild(createCard(task));
-      });
+      macrotask.forEach(task => macBody.appendChild(createCard(task)));
     }
   };
 
   // ── FLASH EXECUTING CARD ──
-  // Briefly highlights a card green when it executes
   const flashCard = (taskId) => {
     const card = document.getElementById(`card-${taskId}`);
     if (!card) return;
@@ -98,35 +84,27 @@ const Renderer = (() => {
     const output = els.consoleOutput();
     if (!output) return;
 
-    // clear placeholder hint on first real log
     const hint = output.querySelector('.empty-hint');
     if (hint) hint.remove();
 
-    // only render new entries (compare by id)
-    const existing = output.querySelectorAll('.console-line');
-    const existingIds = new Set(
-      [...existing].map(el => el.dataset.id)
-    );
+    const existing    = output.querySelectorAll('.console-line');
+    const existingIds = new Set([...existing].map(el => el.dataset.id));
 
     logEntries.forEach(entry => {
-      if (existingIds.has(String(entry.id))) return; // already rendered
-
-      // skip system messages from console output panel
+      if (existingIds.has(String(entry.id))) return;
       if (entry.type === 'system') return;
 
       const line = document.createElement('div');
-      line.className       = `console-line ${entry.type}`;
-      line.dataset.id      = entry.id;
-      line.textContent     = entry.message;
+      line.className   = `console-line ${entry.type}`;
+      line.dataset.id  = entry.id;
+      line.textContent = entry.message;
       output.appendChild(line);
     });
 
-    // auto scroll to bottom
     output.scrollTop = output.scrollHeight;
   };
 
-  // ── WRITE SYSTEM MESSAGE TO CONSOLE ──
-  // Shows things like "loaded 3 tasks", "loop complete"
+  // ── WRITE SYSTEM MESSAGE ──
   const writeSystem = (message) => {
     const output = els.consoleOutput();
     if (!output) return;
@@ -141,29 +119,52 @@ const Renderer = (() => {
     output.scrollTop = output.scrollHeight;
   };
 
-  // ── UPDATE LOOP STATUS DOT ──
+  // ── LOOP STATUS DOT ──
   const setLoopStatus = (active) => {
     const dot = document.querySelector('.loop-dot');
     if (!dot) return;
     dot.classList.toggle('active', active);
   };
 
-  // ── SET BUTTONS STATE ──
+  // ── BUTTON STATES ──
   const setButtonState = (state) => {
-    // state: 'idle' | 'running' | 'done'
     const run   = els.btnRun();
     const step  = els.btnStep();
-    const reset = els.btnReset();
 
     if (state === 'running') {
       run.disabled  = true;
       step.disabled = true;
-    } else if (state === 'idle') {
+    } else {
       run.disabled  = false;
       step.disabled = false;
-    } else if (state === 'done') {
-      run.disabled  = true;
-      step.disabled = true;
+    }
+  };
+
+  // ── SET ACTIVE PHASE ──
+  const setActivePhase = (phase) => {
+    const panels = {
+      callstack: document.getElementById('panel-callstack'),
+      microtask: document.getElementById('panel-microtask'),
+      macrotask: document.getElementById('panel-macrotask'),
+    };
+
+    Object.values(panels).forEach(p => {
+      if (p) p.classList.remove('active-callstack', 'active-microtask', 'active-macrotask');
+    });
+
+    const label = document.getElementById('phase-label');
+
+    if (phase === 'callStack') {
+      if (panels.callstack) panels.callstack.classList.add('active-callstack');
+      if (label) { label.className = 'phase-label phase-callstack'; label.textContent = 'call stack'; }
+    } else if (phase === 'microtask') {
+      if (panels.microtask) panels.microtask.classList.add('active-microtask');
+      if (label) { label.className = 'phase-label phase-microtask'; label.textContent = 'microtask'; }
+    } else if (phase === 'macrotask') {
+      if (panels.macrotask) panels.macrotask.classList.add('active-macrotask');
+      if (label) { label.className = 'phase-label phase-macrotask'; label.textContent = 'macrotask'; }
+    } else {
+      if (label) { label.className = 'phase-label phase-idle'; label.textContent = 'idle'; }
     }
   };
 
@@ -190,35 +191,52 @@ const Renderer = (() => {
     setButtonState('idle');
   };
 
-  // ── WIRE UP EVENT LOOP CALLBACKS ──
+  // ── URL SHARE ──
+  const initUrlShare = () => {
+    const params  = new URLSearchParams(window.location.search);
+    const encoded = params.get('code');
+    if (encoded) {
+      try {
+        const code     = decodeURIComponent(atob(encoded));
+        const textarea = document.getElementById('code-input');
+        if (textarea) {
+          textarea.value = code;
+          writeSystem('📎 code loaded from URL — press Run');
+        }
+      } catch (e) {
+        // invalid base64 — ignore
+      }
+    }
+  };
+
+  // ══════════════════════════════════════════
+  // ── INIT — everything below is wired here ──
+  // ══════════════════════════════════════════
   const init = () => {
 
-    // fires after every tick
+    // ── EVENT LOOP CALLBACKS ──
     EventLoop.onTick((data) => {
+      const tickEl = document.getElementById('tick-display');
+      if (tickEl) tickEl.textContent = data.tick;
+
+      setActivePhase(data.phase);
       setLoopStatus(true);
       renderQueues(data.stacks);
       writeConsole(data.log);
 
-      // flash the card that just executed
-      if (data.phase === 'callStack' && data.task) {
-        flashCard(data.task.id);
-      }
-      if (data.phase === 'microtask' && data.tasks) {
-        data.tasks.forEach(t => flashCard(t.id));
-      }
-      if (data.phase === 'macrotask' && data.task) {
-        flashCard(data.task.id);
-      }
+      if (data.phase === 'callStack' && data.task)  flashCard(data.task.id);
+      if (data.phase === 'microtask' && data.tasks) data.tasks.forEach(t => flashCard(t.id));
+      if (data.phase === 'macrotask' && data.task)  flashCard(data.task.id);
     });
 
-    // fires when all queues are empty
     EventLoop.onDone((data) => {
       setLoopStatus(false);
-      setButtonState('done');
+      setButtonState('idle');
+      setActivePhase('idle');
       writeSystem(`✓ loop complete — ${data.tick} ticks`);
     });
 
-    
+    // ── RUN BUTTON ──
     els.btnRun().addEventListener('click', async () => {
       const code = els.codeInput().value.trim();
       if (!code) {
@@ -238,7 +256,6 @@ const Renderer = (() => {
         return;
       }
 
-      // first click — load and show initial queue state
       if (EventLoop.getTickCount() === 0 && !EventLoop.isRunning()) {
         clearAll();
         await EventLoop.step(code);
@@ -247,32 +264,46 @@ const Renderer = (() => {
         return;
       }
 
-      // subsequent clicks — advance one tick
       if (EventLoop.isRunning()) {
         EventLoop.tick();
       }
     });
 
-
     // ── RESET BUTTON ──
     els.btnReset().addEventListener('click', () => {
       EventLoop.reset();
       clearAll();
+      setActivePhase('idle');
+      const tickEl = document.getElementById('tick-display');
+      if (tickEl) tickEl.textContent = '0';
       writeSystem('↺ reset — ready');
     });
-
-    // ── SPEED SLIDER ──
-    // els.speedSlider().addEventListener('input', (e) => {
-    //   const val = Number(e.target.value);
-    //   EventLoop.setSpeed(val);
-    //   els.speedLabel().textContent = val;
-    // });
 
     // ── SPEED SLIDER ──
     els.speedSlider().addEventListener('input', (e) => {
       const val = Number(e.target.value);
       EventLoop.setSpeed(val);
       els.speedLabel().textContent = val;
+    });
+
+    // ── SHARE BUTTON ──
+    document.getElementById('btn-share').addEventListener('click', () => {
+      const code = els.codeInput().value.trim();
+      if (!code) {
+        writeSystem('⚠ nothing to share — write some code first');
+        return;
+      }
+      try {
+        const encoded = btoa(encodeURIComponent(code));
+        const url     = `${location.origin}${location.pathname}?code=${encoded}`;
+        navigator.clipboard.writeText(url).then(() => {
+          writeSystem('✓ share link copied to clipboard');
+        }).catch(() => {
+          writeSystem(`share link: ${url}`);
+        });
+      } catch (e) {
+        writeSystem('⚠ could not generate share link');
+      }
     });
 
     // ── EXAMPLE SELECTOR ──
@@ -317,27 +348,39 @@ setTimeout(() => {
 console.log('End');`,
     };
 
-    const exampleSelect = els.exampleSelect();
-    if (exampleSelect) {
-      exampleSelect.addEventListener('change', (e) => {
-        const key = e.target.value;
-        if (!key || !examples[key]) return;
-        els.codeInput().value = examples[key];
-        EventLoop.reset();
-        clearAll();
-        writeSystem(`loaded example: ${key} — press Run`);
-        e.target.value = '';
-      });
-    }
+    document.getElementById('example-select').addEventListener('change', (e) => {
+      const key = e.target.value;
+      if (!key || !examples[key]) return;
+      els.codeInput().value = examples[key];
+      EventLoop.reset();
+      clearAll();
+      writeSystem(`loaded example: ${key} — press Run`);
+      e.target.value = '';
+    });
 
-    // ── initial render ──
+    // ── KEYBOARD SHORTCUTS ──
+    document.addEventListener('keydown', async (e) => {
+      if (e.code === 'Space' && e.target !== els.codeInput()) {
+        e.preventDefault();
+        els.btnStep().click();
+      }
+      if (e.code === 'KeyR' && e.target !== els.codeInput()) {
+        e.preventDefault();
+        els.btnRun().click();
+      }
+      if (e.code === 'Escape') {
+        els.btnReset().click();
+      }
+    });
+
+    // ── LOAD FROM URL IF PRESENT ──
+    initUrlShare();
+
+    // ── INITIAL STATE ──
     clearAll();
     writeSystem('ready — type code above and press Run');
 
-    // ── initial render ──
-    // clearAll();
-    // writeSystem('ready — type code above and press Run');
-  };
+  }; // ← init ends here
 
   // ── PUBLIC API ──
   return {
@@ -346,11 +389,13 @@ console.log('End');`,
     writeConsole,
     writeSystem,
     clearAll,
+    setActivePhase,
+    initUrlShare,
   };
 
-})();
+})(); // ← Renderer ends here
 
-// boot the renderer once DOM is ready
+// ── BOOT — stays outside everything ──
 document.addEventListener('DOMContentLoaded', () => {
   Renderer.init();
 });
