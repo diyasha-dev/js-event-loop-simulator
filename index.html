@@ -6,54 +6,63 @@
   <title>JS Event Loop Simulator</title>
   <link rel="stylesheet" href="style.css" />
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚙</text></svg>">
-
 </head>
 <body>
 
   <!-- ── HEADER ── -->
   <header>
-    <h1>⚙ JS Event Loop Simulator</h1>
-    <span class="tagline">visualize the invisible</span>
+    <div class="header-left">
+      <h1>⚙ JS Event Loop Simulator</h1>
+      <span class="tagline">Visualize JavaScript's concurrency model in real time</span>
+    </div>
   </header>
 
   <!-- ── TOOLBAR ── -->
- 
-<div class="toolbar">
-  <button id="btn-run"   class="btn btn-primary">▶ Run</button>
-  <button id="btn-step"  class="btn btn-secondary">⏭ Step</button>
-  <button id="btn-reset" class="btn btn-ghost">↺ Reset</button>
-  <button id="btn-share" class="btn btn-ghost">⎘ Share</button>
-  <select id="example-select" class="example-select">
-  <option value="">⚡ Load example...</option>
-  <option value="basic">Classic order test</option>
-  <option value="promises">Promise vs setTimeout</option>
-  <option value="mixed">The interview question</option>
-  <option value="nested">Nested promises</option>
-</select>
+  <div class="toolbar">
+    <button id="btn-run" class="btn btn-primary">▶ Run</button>
+    <button id="btn-step" class="btn btn-secondary" data-tooltip="Advance one tick at a time to follow execution manually">⏭ Step</button>
+    <button id="btn-reset" class="btn btn-ghost">↺ Reset</button>
+    <button id="btn-share" class="btn btn-ghost">⎘ Share</button>
 
-  <div class="speed-control">
-    <label for="speed-slider">Speed</label>
-    <input type="range" id="speed-slider" min="1" max="5" value="3" />
-    <span id="speed-label">3</span>
+    <select id="example-select" class="example-select">
+      <option value="">⚡ Load example...</option>
+      <option value="basic">Classic order test</option>
+      <option value="promises">Promise vs setTimeout</option>
+      <option value="mixed">The interview question</option>
+      <option value="nested">Nested promises</option>
+    </select>
+
+    <div class="tick-counter">
+      <span>Tick</span>
+      <span id="tick-display">0</span>
+    </div>
+
+    <div id="phase-label" class="phase-label">idle</div>
+
+    <div class="loop-status">
+      <span class="loop-dot"></span>
+      <span>event loop</span>
+    </div>
+
+    <div class="speed-control">
+      <label for="speed-slider">Speed</label>
+      <input type="range" id="speed-slider" min="1" max="5" value="3" />
+      <span id="speed-label">3</span>
+    </div>
   </div>
 
-  <div class="loop-status">
-    <span class="loop-dot"></span>
-    <span>event loop</span>
+  <!-- ── SHORTCUTS BAR ── -->
+  <div class="shortcuts-bar">
+    <span><kbd>Space</kbd> Step</span>
+    <span><kbd>R</kbd> Run</span>
+    <span><kbd>Esc</kbd> Reset</span>
   </div>
-</div>
 
-<div class="shortcuts-bar">
-  <span>Space — step</span>
-  <span>R — run</span>
-  <span>Esc — reset</span>
-</div>
-
-<div class="tick-counter">
-  <span>Tick</span>
-  <span id="tick-display">0</span>
-</div>
-<div id="phase-label" class="phase-label">idle</div>
+  <!-- ── CURRENT ACTION BAR ── -->
+  <div id="current-action-bar">
+    <span class="action-label">idle</span>
+    <span id="action-text">ready — type code above and press Run</span>
+  </div>
 
   <!-- ── MAIN LAYOUT ── -->
   <main class="main-grid">
@@ -79,7 +88,7 @@ console.log('sync 2');"
     <!-- RIGHT TOP: Three Queue Panels -->
     <div class="queues-area">
 
-      <section class="queue-panel" id="panel-callstack" aria-label="Call Stack">
+      <section class="queue-panel" id="panel-callstack" aria-label="Call Stack" data-tooltip="LIFO — sync code runs here first, last in first out">
         <div class="panel-header">
           <span class="dot dot-green"></span>
           Call Stack
@@ -90,7 +99,7 @@ console.log('sync 2');"
         </div>
       </section>
 
-      <section class="queue-panel" id="panel-microtask" aria-label="Microtask Queue">
+      <section class="queue-panel" id="panel-microtask" aria-label="Microtask Queue" data-tooltip="Promises and async/await — always fully drains before any macrotask runs">
         <div class="panel-header">
           <span class="dot dot-yellow"></span>
           Microtask Queue
@@ -101,7 +110,7 @@ console.log('sync 2');"
         </div>
       </section>
 
-      <section class="queue-panel" id="panel-macrotask" aria-label="Macrotask Queue">
+      <section class="queue-panel" id="panel-macrotask" aria-label="Macrotask Queue" data-tooltip="setTimeout and setInterval — only ONE runs per tick, lowest priority">
         <div class="panel-header">
           <span class="dot dot-red"></span>
           Macrotask Queue
@@ -127,13 +136,22 @@ console.log('sync 2');"
 
   </main>
 
-  ── SCRIPTS (loaded in dependency order) ── 
-<script src="core/parser.js"></script>
-<script src="core/CallStack.js"></script>
-<script src="core/MicrotaskQueue.js"></script>
-<script src="core/MacrotaskQueue.js"></script>
-<script src="core/eventLoop.js"></script>
-<script src="ui/renderer.js"></script>
+  <!-- ── FOOTER ── -->
+  <footer class="app-footer">
+    <span>Built with vanilla JS — zero dependencies</span>
+    <span class="footer-dot">·</span>
+    <a href="https://github.com/diyasha-dev/js-event-loop-simulator" target="_blank">GitHub</a>
+    <span class="footer-dot">·</span>
+    <span>Based on the WHATWG HTML spec event loop model</span>
+  </footer>
+
+  <!-- ── SCRIPTS ── -->
+  <script src="core/parser.js"></script>
+  <script src="core/CallStack.js"></script>
+  <script src="core/MicrotaskQueue.js"></script>
+  <script src="core/MacrotaskQueue.js"></script>
+  <script src="core/eventLoop.js"></script>
+  <script src="ui/renderer.js"></script>
 
 </body>
 </html>

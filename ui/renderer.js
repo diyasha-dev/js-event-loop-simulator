@@ -4,16 +4,16 @@ const Renderer = (() => {
 
   // ── DOM REFERENCES ──
   const els = {
-    callStackBody:  () => document.getElementById('callstack-body'),
-    microtaskBody:  () => document.getElementById('microtask-body'),
-    macrotaskBody:  () => document.getElementById('macrotask-body'),
-    consoleOutput:  () => document.getElementById('console-output'),
-    codeInput:      () => document.getElementById('code-input'),
-    btnRun:         () => document.getElementById('btn-run'),
-    btnStep:        () => document.getElementById('btn-step'),
-    btnReset:       () => document.getElementById('btn-reset'),
-    speedSlider:    () => document.getElementById('speed-slider'),
-    speedLabel:     () => document.getElementById('speed-label'),
+    callStackBody: () => document.getElementById('callstack-body'),
+    microtaskBody: () => document.getElementById('microtask-body'),
+    macrotaskBody: () => document.getElementById('macrotask-body'),
+    consoleOutput: () => document.getElementById('console-output'),
+    codeInput:     () => document.getElementById('code-input'),
+    btnRun:        () => document.getElementById('btn-run'),
+    btnStep:       () => document.getElementById('btn-step'),
+    btnReset:      () => document.getElementById('btn-reset'),
+    speedSlider:   () => document.getElementById('speed-slider'),
+    speedLabel:    () => document.getElementById('speed-label'),
   };
 
   // ── CREATE A TASK CARD ──
@@ -95,9 +95,27 @@ const Renderer = (() => {
       if (entry.type === 'system') return;
 
       const line = document.createElement('div');
-      line.className   = `console-line ${entry.type}`;
-      line.dataset.id  = entry.id;
-      line.textContent = entry.message;
+      line.className  = `console-line ${entry.type}`;
+      line.dataset.id = entry.id;
+
+      // badge based on execution phase
+      const badge = document.createElement('span');
+      badge.textContent = entry.phase === 'callStack' ? 'SYNC'
+                        : entry.phase === 'microtask' ? 'MICRO'
+                        : entry.phase === 'macrotask' ? 'MACRO'
+                        : 'SYS';
+      badge.className = `console-badge badge-${
+        entry.phase === 'callStack' ? 'log'
+        : entry.phase === 'microtask' ? 'warn'
+        : entry.phase === 'macrotask' ? 'info'
+        : 'sys'
+      }`;
+
+      const text = document.createElement('span');
+      text.textContent = entry.message;
+
+      line.appendChild(badge);
+      line.appendChild(text);
       output.appendChild(line);
     });
 
@@ -128,9 +146,8 @@ const Renderer = (() => {
 
   // ── BUTTON STATES ──
   const setButtonState = (state) => {
-    const run   = els.btnRun();
-    const step  = els.btnStep();
-
+    const run  = els.btnRun();
+    const step = els.btnStep();
     if (state === 'running') {
       run.disabled  = true;
       step.disabled = true;
@@ -141,7 +158,7 @@ const Renderer = (() => {
   };
 
   // ── SET ACTIVE PHASE ──
-  const setActivePhase = (phase) => {
+  const setActivePhase = (phase, taskLabel = '') => {
     const panels = {
       callstack: document.getElementById('panel-callstack'),
       microtask: document.getElementById('panel-microtask'),
@@ -152,19 +169,51 @@ const Renderer = (() => {
       if (p) p.classList.remove('active-callstack', 'active-microtask', 'active-macrotask');
     });
 
-    const label = document.getElementById('phase-label');
+    const label    = document.getElementById('phase-label');
+    const actLabel = document.querySelector('.action-label');
+    const actText  = document.getElementById('action-text');
 
-    if (phase === 'callStack') {
-      if (panels.callstack) panels.callstack.classList.add('active-callstack');
-      if (label) { label.className = 'phase-label phase-callstack'; label.textContent = 'call stack'; }
-    } else if (phase === 'microtask') {
-      if (panels.microtask) panels.microtask.classList.add('active-microtask');
-      if (label) { label.className = 'phase-label phase-microtask'; label.textContent = 'microtask'; }
-    } else if (phase === 'macrotask') {
-      if (panels.macrotask) panels.macrotask.classList.add('active-macrotask');
-      if (label) { label.className = 'phase-label phase-macrotask'; label.textContent = 'macrotask'; }
+    const phaseMap = {
+      callStack: {
+        panel:    'callstack',
+        cls:      'active-callstack',
+        labelCls: 'phase-callstack',
+        text:     'Call Stack',
+        msg:      taskLabel || 'running synchronous code...',
+      },
+      microtask: {
+        panel:    'microtask',
+        cls:      'active-microtask',
+        labelCls: 'phase-microtask',
+        text:     'Microtask',
+        msg:      taskLabel || 'draining promise queue...',
+      },
+      macrotask: {
+        panel:    'macrotask',
+        cls:      'active-macrotask',
+        labelCls: 'phase-macrotask',
+        text:     'Macrotask',
+        msg:      taskLabel || 'executing setTimeout callback...',
+      },
+    };
+
+    const config = phaseMap[phase];
+
+    if (config) {
+      if (panels[config.panel]) panels[config.panel].classList.add(config.cls);
+      if (label) {
+        label.className   = `phase-label ${config.labelCls}`;
+        label.textContent = config.text;
+      }
+      if (actLabel) {
+        actLabel.className   = `action-label ${config.labelCls}`;
+        actLabel.textContent = config.text;
+      }
+      if (actText) actText.textContent = config.msg;
     } else {
-      if (label) { label.className = 'phase-label phase-idle'; label.textContent = 'idle'; }
+      if (label)    { label.className = 'phase-label phase-idle'; label.textContent = 'idle'; }
+      if (actLabel) { actLabel.className = 'action-label'; actLabel.textContent = 'idle'; }
+      if (actText)  actText.textContent = 'ready — type code above and press Run';
     }
   };
 
@@ -209,17 +258,21 @@ const Renderer = (() => {
     }
   };
 
-  // ══════════════════════════════════════════
-  // ── INIT — everything below is wired here ──
-  // ══════════════════════════════════════════
+  // ── INIT ──
   const init = () => {
 
-    // ── EVENT LOOP CALLBACKS ──
+    // fires after every tick
     EventLoop.onTick((data) => {
       const tickEl = document.getElementById('tick-display');
       if (tickEl) tickEl.textContent = data.tick;
 
-      setActivePhase(data.phase);
+      const currentLabel = data.task
+        ? data.task.label
+        : data.tasks && data.tasks.length
+          ? data.tasks.map(t => t.label).join(', ')
+          : '';
+      setActivePhase(data.phase, currentLabel);
+
       setLoopStatus(true);
       renderQueues(data.stacks);
       writeConsole(data.log);
@@ -229,6 +282,7 @@ const Renderer = (() => {
       if (data.phase === 'macrotask' && data.task)  flashCard(data.task.id);
     });
 
+    // fires when all queues empty
     EventLoop.onDone((data) => {
       setLoopStatus(false);
       setButtonState('idle');
@@ -380,7 +434,7 @@ console.log('End');`,
     clearAll();
     writeSystem('ready — type code above and press Run');
 
-  }; // ← init ends here
+  };
 
   // ── PUBLIC API ──
   return {
@@ -393,9 +447,9 @@ console.log('End');`,
     initUrlShare,
   };
 
-})(); // ← Renderer ends here
+})();
 
-// ── BOOT — stays outside everything ──
+// ── BOOT ──
 document.addEventListener('DOMContentLoaded', () => {
   Renderer.init();
 });

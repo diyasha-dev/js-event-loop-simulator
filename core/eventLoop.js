@@ -29,11 +29,13 @@ const EventLoop = (() => {
   };
 
   // ── LOG ──
-  const addLog = (message, type = 'log') => {
+  
+     const addLog = (message, type = 'log', phase = 'sync') => {
     const entry = {
       id:        _log.length + 1,
       message:   String(message),
       type,
+      phase,
       tick:      _tickCount,
       timestamp: Date.now(),
     };
@@ -56,7 +58,8 @@ const EventLoop = (() => {
     if (_callStackTasks.length > 0) {
       const task = _callStackTasks.shift();
       task.status = 'executing';
-      if (task.method) addLog(task.value, task.method);
+      // if (task.method) addLog(task.value, task.method);
+       if (task.method) addLog(task.value, task.method, 'callStack');
       task.status = 'done';
 
       if (_onTick) _onTick({
@@ -72,7 +75,8 @@ const EventLoop = (() => {
       while (_microtaskTasks.length > 0) {
         const task = _microtaskTasks.shift();
         task.status = 'executing';
-        if (task.method) addLog(task.value, task.method);
+        // if (task.method) addLog(task.value, task.method);
+          if (task.method) addLog(task.value, task.method, 'microtask');
         task.status = 'done';
         drained.push(task);
       }
@@ -89,8 +93,12 @@ const EventLoop = (() => {
       const group = _macrotaskTasks.shift();
 
       // log the macrotask's own console output
+      // group.outputs.forEach(o => {
+      //   if (o.method) addLog(o.value, o.method);
+      // });
+
       group.outputs.forEach(o => {
-        if (o.method) addLog(o.value, o.method);
+      if (o.method) addLog(o.value, o.method, 'macrotask');
       });
 
       // push this macrotask's microtasks into the microtask queue
