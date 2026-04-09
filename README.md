@@ -18,4 +18,4 @@ HTML5 · CSS3 · Vanilla JavaScript
 Just open index.html in your browser — no install needed.
 
 ## Live Demo
-[View Live Site](https://your-vercel-url.vercel.app)
+[View Live Site](https://js-event-loop-simulator.vercel.app/)
