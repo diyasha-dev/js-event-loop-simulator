@@ -340,6 +340,22 @@ const Renderer = (() => {
       els.speedLabel().textContent = val;
     });
 
+    // ── THEME TOGGLE ──
+    const btnTheme = document.getElementById('btn-theme');
+    
+    // restore saved preference on load
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'light') {
+      document.body.classList.add('light-mode');
+      btnTheme.textContent = '☀️';
+    }
+
+    btnTheme.addEventListener('click', () => {
+      const isLight = document.body.classList.toggle('light-mode');
+      btnTheme.textContent  = isLight ? '☀️' : '🌙';
+      localStorage.setItem('theme', isLight ? 'light' : 'dark');
+    });
+
     // ── SHARE BUTTON ──
     document.getElementById('btn-share').addEventListener('click', () => {
       const code = els.codeInput().value.trim();
@@ -426,6 +442,162 @@ console.log('End');`,
         els.btnReset().click();
       }
     });
+
+    // ── DRAGGABLE CONSOLE PANEL ──
+    // const dragHandle  = document.getElementById('drag-handle');
+    // const mainGrid    = document.querySelector('.main-grid');
+
+    // if (dragHandle && mainGrid) {
+    //   let isDragging  = false;
+    //   let startY      = 0;
+    //   let startRows   = null;
+
+    //   // get current grid row sizes as px values
+    //   const getRowHeights = () => {
+    //     const style    = window.getComputedStyle(mainGrid);
+    //     const rows     = style.gridTemplateRows.split(' ');
+    //     // rows = ['Xpx', '5px', 'Ypx']
+    //     return {
+    //       top:    parseFloat(rows[0]),
+    //       handle: parseFloat(rows[1]),
+    //       bottom: parseFloat(rows[2]),
+    //     };
+    //   };
+
+    //   dragHandle.addEventListener('mousedown', (e) => {
+    //     isDragging = true;
+    //     startY     = e.clientY;
+    //     startRows  = getRowHeights();
+    //     dragHandle.classList.add('dragging');
+    //     document.body.style.cursor    = 'row-resize';
+    //     document.body.style.userSelect = 'none';
+    //     e.preventDefault();
+    //   });
+
+    //   document.addEventListener('mousemove', (e) => {
+    //     if (!isDragging) return;
+
+    //     const delta     = e.clientY - startY;
+    //     const minTop    = 80;   // minimum queue area height px
+    //     const minBottom = 80;   // minimum console height px
+
+    //     let newTop    = startRows.top    + delta;
+    //     let newBottom = startRows.bottom - delta;
+
+    //     // clamp both sides
+    //     if (newTop    < minTop)    { newTop    = minTop;    newBottom = startRows.top + startRows.bottom - minTop; }
+    //     if (newBottom < minBottom) { newBottom = minBottom; newTop    = startRows.top + startRows.bottom - minBottom; }
+
+    //     mainGrid.style.gridTemplateRows = `${newTop}px 5px ${newBottom}px`;
+    //   });
+
+    //   document.addEventListener('mouseup', () => {
+    //     if (!isDragging) return;
+    //     isDragging = false;
+    //     dragHandle.classList.remove('dragging');
+    //     document.body.style.cursor     = '';
+    //     document.body.style.userSelect = '';
+    //   });
+
+    //   // touch support for mobile
+    //   dragHandle.addEventListener('touchstart', (e) => {
+    //     isDragging = true;
+    //     startY     = e.touches[0].clientY;
+    //     startRows  = getRowHeights();
+    //     dragHandle.classList.add('dragging');
+    //     e.preventDefault();
+    //   }, { passive: false });
+
+    //   document.addEventListener('touchmove', (e) => {
+    //     if (!isDragging) return;
+    //     const delta     = e.touches[0].clientY - startY;
+    //     const minTop    = 80;
+    //     const minBottom = 80;
+    //     let newTop    = startRows.top    + delta;
+    //     let newBottom = startRows.bottom - delta;
+    //     if (newTop    < minTop)    { newTop    = minTop;    newBottom = startRows.top + startRows.bottom - minTop; }
+    //     if (newBottom < minBottom) { newBottom = minBottom; newTop    = startRows.top + startRows.bottom - minBottom; }
+    //     mainGrid.style.gridTemplateRows = `${newTop}px 5px ${newBottom}px`;
+    //   }, { passive: false });
+
+    //   document.addEventListener('touchend', () => {
+    //     isDragging = false;
+    //     dragHandle.classList.remove('dragging');
+    //   });
+    // }
+
+    // ── DRAGGABLE CONSOLE PANEL ──
+    const dragHandle   = document.getElementById('drag-handle');
+    const consolePanel = document.getElementById('console-panel');
+    const rightColumn  = document.getElementById('right-column');
+
+    if (dragHandle && consolePanel && rightColumn) {
+      let isDragging    = false;
+      let startY        = 0;
+      let startHeight   = 0;
+
+      const MIN_HEIGHT  = 80;
+      const MAX_RATIO   = 0.75; // console can take max 75% of right column
+
+      dragHandle.addEventListener('mousedown', (e) => {
+        isDragging  = true;
+        startY      = e.clientY;
+        startHeight = consolePanel.getBoundingClientRect().height;
+        dragHandle.classList.add('dragging');
+        document.body.style.cursor     = 'row-resize';
+        document.body.style.userSelect = 'none';
+        e.preventDefault();
+      });
+
+      document.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+
+        const delta      = startY - e.clientY;  // drag up = bigger console
+        const columnH    = rightColumn.getBoundingClientRect().height;
+        const maxHeight  = Math.floor(columnH * MAX_RATIO);
+
+        let newHeight = startHeight + delta;
+        newHeight     = Math.max(MIN_HEIGHT, Math.min(maxHeight, newHeight));
+
+        consolePanel.style.height    = `${newHeight}px`;
+        consolePanel.style.minHeight = `${newHeight}px`;
+        consolePanel.style.maxHeight = `${newHeight}px`;
+      });
+
+      document.addEventListener('mouseup', () => {
+        if (!isDragging) return;
+        isDragging = false;
+        dragHandle.classList.remove('dragging');
+        document.body.style.cursor     = '';
+        document.body.style.userSelect = '';
+      });
+
+      // touch support
+      dragHandle.addEventListener('touchstart', (e) => {
+        isDragging  = true;
+        startY      = e.touches[0].clientY;
+        startHeight = consolePanel.getBoundingClientRect().height;
+        dragHandle.classList.add('dragging');
+        e.preventDefault();
+      }, { passive: false });
+
+      document.addEventListener('touchmove', (e) => {
+        if (!isDragging) return;
+        const delta     = startY - e.touches[0].clientY;
+        const columnH   = rightColumn.getBoundingClientRect().height;
+        const maxHeight = Math.floor(columnH * MAX_RATIO);
+        let newHeight   = startHeight + delta;
+        newHeight       = Math.max(MIN_HEIGHT, Math.min(maxHeight, newHeight));
+        consolePanel.style.height    = `${newHeight}px`;
+        consolePanel.style.minHeight = `${newHeight}px`;
+        consolePanel.style.maxHeight = `${newHeight}px`;
+      }, { passive: false });
+
+      document.addEventListener('touchend', () => {
+        isDragging = false;
+        dragHandle.classList.remove('dragging');
+      });
+    }
 
     // ── LOAD FROM URL IF PRESENT ──
     initUrlShare();

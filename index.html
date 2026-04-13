@@ -43,7 +43,7 @@
       <span class="loop-dot"></span>
       <span>event loop</span>
     </div>
-
+    <button id="btn-theme" title="Toggle light/dark mode">🌙</button>
     <div class="speed-control">
       <label for="speed-slider">Speed</label>
       <input type="range" id="speed-slider" min="1" max="5" value="3" />
@@ -86,7 +86,7 @@ console.log('sync 2');"
     </section>
 
     <!-- RIGHT TOP: Three Queue Panels -->
-    <div class="queues-area">
+    <!-- <div class="queues-area">
 
       <section class="queue-panel" id="panel-callstack" aria-label="Call Stack" data-tooltip="LIFO — sync code runs here first, last in first out">
         <div class="panel-header">
@@ -121,10 +121,10 @@ console.log('sync 2');"
         </div>
       </section>
 
-    </div>
+    </div> -->
 
     <!-- RIGHT BOTTOM: Console Output -->
-    <section class="panel console-panel" aria-label="Console output">
+    <!-- <section class="panel console-panel" aria-label="Console output">
       <div class="panel-header">
         <span class="dot dot-blue"></span>
         Console Output
@@ -133,16 +133,73 @@ console.log('sync 2');"
         <p class="empty-hint">Output will appear here when you run code...</p>
       </div>
     </section>
+  </main> -->
+
+  <!-- RIGHT COLUMN: queues + drag + console -->
+    <div class="right-column" id="right-column">
+
+      <!-- THREE QUEUE PANELS -->
+      <div class="queues-area" id="queues-area">
+
+        <section class="queue-panel" id="panel-callstack" aria-label="Call Stack" data-tooltip="LIFO — sync code runs here first, last in first out">
+          <div class="panel-header">
+            <span class="dot dot-green"></span>
+            Call Stack
+            <span class="badge">LIFO</span>
+          </div>
+          <div class="queue-body" id="callstack-body">
+            <p class="empty-hint">Empty</p>
+          </div>
+        </section>
+
+        <section class="queue-panel" id="panel-microtask" aria-label="Microtask Queue" data-tooltip="Promises and async/await — always fully drains before any macrotask runs">
+          <div class="panel-header">
+            <span class="dot dot-yellow"></span>
+            Microtask Queue
+            <span class="badge badge-yellow">HIGH PRIORITY</span>
+          </div>
+          <div class="queue-body" id="microtask-body">
+            <p class="empty-hint">Empty</p>
+          </div>
+        </section>
+
+        <section class="queue-panel" id="panel-macrotask" aria-label="Macrotask Queue" data-tooltip="setTimeout and setInterval — only ONE runs per tick, lowest priority">
+          <div class="panel-header">
+            <span class="dot dot-red"></span>
+            Macrotask Queue
+            <span class="badge badge-red">LOW PRIORITY</span>
+          </div>
+          <div class="queue-body" id="macrotask-body">
+            <p class="empty-hint">Empty</p>
+          </div>
+        </section>
+
+      </div>
+
+      <!-- DRAG HANDLE — only inside right column -->
+      <div class="drag-handle" id="drag-handle" title="Drag to resize console"></div>
+
+      <!-- CONSOLE OUTPUT -->
+      <section class="panel console-panel" id="console-panel" aria-label="Console output">
+        <div class="panel-header">
+          <span class="dot dot-blue"></span>
+          Console Output
+        </div>
+        <div class="console-output" id="console-output">
+          <p class="empty-hint">Output will appear here when you run code...</p>
+        </div>
+      </section>
+
+    </div>
 
   </main>
 
   <!-- ── FOOTER ── -->
   <footer class="app-footer">
-    <span>Built with vanilla JS — zero dependencies</span>
     <span class="footer-dot">·</span>
     <a href="https://github.com/diyasha-dev/js-event-loop-simulator" target="_blank">GitHub</a>
     <span class="footer-dot">·</span>
-    <span>Based on the WHATWG HTML spec event loop model</span>
+    
   </footer>
 
   <!-- ── SCRIPTS ── -->

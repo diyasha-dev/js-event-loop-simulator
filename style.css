@@ -1,4 +1,230 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+/* ── LIGHT MODE THEME ── */
+/* ── LIGHT MODE THEME ── */
+body.light-mode {
+  --bg-primary:     #f4f6fb;
+  --bg-secondary:   #eaecf4;
+  --bg-panel:       #ffffff;
+  --bg-card:        #e8ecf5;
+  --border:         #cdd2e8;
+  --border-light:   #b8bfd6;
+
+  --text-primary:   #111827;
+  --text-secondary: #374151;
+  --text-muted:     #6b7280;
+
+  --green:  #059669;
+  --yellow: #b45309;
+  --red:    #dc2626;
+  --blue:   #1d4ed8;
+  --purple: #5b21b6;
+
+  --purple-dark: #4c1d95;
+  --purple-dim:  #8b5cf6;
+}
+
+/* ── LIGHT MODE SPECIFIC OVERRIDES ── */
+
+/* Buttons */
+body.light-mode .btn-secondary {
+  border-color: var(--purple-dim);
+  color: var(--purple);
+  background: rgba(91, 33, 182, 0.06);
+}
+
+body.light-mode .btn-secondary:hover {
+  background: rgba(91, 33, 182, 0.12);
+}
+
+body.light-mode .btn-ghost {
+  border-color: var(--border-light);
+  color: var(--text-secondary);
+  background: var(--bg-panel);
+}
+
+body.light-mode .btn-ghost:hover {
+  border-color: var(--purple-dim);
+  color: var(--purple);
+  background: rgba(91, 33, 182, 0.06);
+}
+
+/* LIFO badge - dark bg looks bad in light mode */
+body.light-mode .badge {
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  border-color: var(--border-light);
+}
+
+/* HIGH PRIORITY badge */
+body.light-mode .badge-yellow {
+  background: rgba(180, 83, 9, 0.08);
+  color: var(--yellow);
+  border-color: rgba(180, 83, 9, 0.3);
+}
+
+/* LOW PRIORITY badge */
+body.light-mode .badge-red {
+  background: rgba(220, 38, 38, 0.08);
+  color: var(--red);
+  border-color: rgba(220, 38, 38, 0.3);
+}
+
+/* Phase label - IDLE */
+body.light-mode #phase-label {
+  background: var(--bg-panel);
+  border-color: var(--border-light);
+  color: var(--text-muted);
+}
+
+body.light-mode #phase-label.phase-callstack {
+  background: rgba(5, 150, 105, 0.08);
+  border-color: var(--green);
+  color: var(--green);
+}
+
+body.light-mode #phase-label.phase-microtask {
+  background: rgba(180, 83, 9, 0.08);
+  border-color: var(--yellow);
+  color: var(--yellow);
+}
+
+body.light-mode #phase-label.phase-macrotask {
+  background: rgba(220, 38, 38, 0.08);
+  border-color: var(--red);
+  color: var(--red);
+}
+
+/* Action bar IDLE badge */
+body.light-mode .action-label {
+  background: var(--bg-panel);
+  border-color: var(--border-light);
+  color: var(--text-muted);
+}
+
+body.light-mode .action-label.phase-callstack {
+  background: rgba(5, 150, 105, 0.08);
+  border-color: var(--green);
+  color: var(--green);
+}
+
+body.light-mode .action-label.phase-microtask {
+  background: rgba(180, 83, 9, 0.08);
+  border-color: var(--yellow);
+  color: var(--yellow);
+}
+
+body.light-mode .action-label.phase-macrotask {
+  background: rgba(220, 38, 38, 0.08);
+  border-color: var(--red);
+  color: var(--red);
+}
+
+/* kbd keys */
+body.light-mode kbd {
+  background: var(--bg-panel);
+  border-color: var(--border-light);
+  color: var(--text-secondary);
+  box-shadow: 0 1px 0 var(--border-light);
+}
+
+/* Textarea */
+body.light-mode .input-panel textarea {
+  background: #fafbff;
+  color: var(--text-primary);
+}
+
+body.light-mode .input-panel textarea:focus {
+  background: #ffffff;
+}
+
+body.light-mode .input-panel textarea::placeholder {
+  color: var(--text-muted);
+  opacity: 0.8;
+}
+
+/* Task cards */
+body.light-mode .task-card {
+  background: var(--bg-panel);
+  border-color: var(--border);
+  color: var(--text-primary);
+}
+
+body.light-mode .task-card.executing {
+  background: rgba(5, 150, 105, 0.08);
+  border-color: var(--green);
+  color: var(--green);
+}
+
+/* Console lines */
+body.light-mode .console-line.system {
+  color: var(--text-muted);
+}
+
+body.light-mode .console-line.log   { color: var(--green); }
+body.light-mode .console-line.info  { color: var(--blue); }
+body.light-mode .console-line.warn  { color: var(--yellow); }
+body.light-mode .console-line.error { color: var(--red); }
+
+/* Console badges */
+body.light-mode .badge-log {
+  background: rgba(5, 150, 105, 0.1);
+  color: var(--green);
+}
+
+body.light-mode .badge-warn {
+  background: rgba(180, 83, 9, 0.1);
+  color: var(--yellow);
+}
+
+body.light-mode .badge-info {
+  background: rgba(29, 78, 216, 0.1);
+  color: var(--blue);
+}
+
+/* Example select */
+body.light-mode .example-select {
+  background: var(--bg-panel);
+  color: var(--text-secondary);
+  border-color: var(--border-light);
+}
+
+/* Speed slider */
+body.light-mode .speed-control {
+  color: var(--text-muted);
+}
+
+/* Loop dot */
+body.light-mode .loop-dot {
+  background: var(--text-muted);
+}
+
+/* Scrollbars */
+body.light-mode .queue-body::-webkit-scrollbar-thumb,
+body.light-mode .console-output::-webkit-scrollbar-thumb {
+  background: var(--border-light);
+}
+
+/* Panel active glow - more visible in light mode */
+body.light-mode .queue-panel.active-callstack {
+  border-color: var(--green);
+  box-shadow: 0 0 0 2px rgba(5, 150, 105, 0.2);
+}
+
+body.light-mode .queue-panel.active-microtask {
+  border-color: var(--yellow);
+  box-shadow: 0 0 0 2px rgba(180, 83, 9, 0.2);
+}
+
+body.light-mode .queue-panel.active-macrotask {
+  border-color: var(--red);
+  box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.2);
+}
+
+/* Theme button itself */
+body.light-mode #btn-theme {
+  border-color: var(--border-light);
+  background: var(--bg-panel);
+}
 
 /* ── RESET & BASE ── */
 *, *::before, *::after {
@@ -377,7 +603,7 @@ kbd {
 }
 
 /* ── MAIN GRID ── */
-.main-grid {
+/* .main-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   grid-template-rows: 1fr 220px;
@@ -386,7 +612,19 @@ kbd {
   flex: 1;
   overflow: hidden;
   min-height: 0;
+} */
+
+.main-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr;
+  gap: 1px;
+  background: var(--border);
+  flex: 1;
+  overflow: hidden;
+  min-height: 0;
 }
+  
 
 /* ── SHARED PANEL ── */
 .panel {
@@ -454,7 +692,7 @@ kbd {
 /* ── CODE INPUT PANEL ── */
 .input-panel {
   grid-column: 1;
-  grid-row: 1 / 3;
+  grid-row: 1 ;
   border-right: 1px solid var(--border);
 }
 
@@ -482,8 +720,8 @@ kbd {
 }
 
 /* ── QUEUES AREA ── */
-.queues-area {
-  grid-column: 2;
+/* .queues-area { */
+  /* grid-column: 2;
   grid-row: 1;
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
@@ -492,7 +730,7 @@ kbd {
   overflow: hidden;
   min-width: 0;
   min-height: 0;
-}
+} */
 
 /* ── QUEUE PANELS ── */
 .queue-panel {
@@ -602,9 +840,9 @@ kbd {
 }
 
 /* ── CONSOLE PANEL ── */
-.console-panel {
+/* .console-panel {
   grid-column: 2;
-  grid-row: 2;
+  grid-row:3;
 }
 
 .console-output {
@@ -624,9 +862,79 @@ kbd {
 .console-output::-webkit-scrollbar-thumb {
   background: var(--border-light);
   border-radius: 2px;
-}
+} */
 
 /* ── CONSOLE LINES ── */
+/* ── RIGHT COLUMN ── */
+.right-column {
+  grid-column: 2;
+  grid-row: 1 / 3;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-height: 0;
+  background: var(--bg-primary);
+}
+
+/* ── QUEUES AREA ── */
+.queues-area {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 1px;
+  background: var(--border);
+  overflow: hidden;
+  min-width: 0;
+  flex: 1;
+  min-height: 0;
+}
+
+/* ── DRAG HANDLE ── */
+.drag-handle {
+  height: 5px;
+  background: var(--border);
+  cursor: row-resize;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+  position: relative;
+  z-index: 10;
+}
+
+.drag-handle:hover {
+  background: var(--purple-dim);
+}
+
+.drag-handle::after {
+  content: '';
+  width: 32px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--border-light);
+  transition: background 0.2s;
+}
+
+.drag-handle:hover::after {
+  background: var(--purple);
+}
+
+.drag-handle.dragging {
+  background: var(--purple-dark);
+}
+
+.drag-handle.dragging::after {
+  background: var(--purple);
+}
+
+/* ── CONSOLE PANEL ── */
+.console-panel {
+  flex-shrink: 0;
+  height: 220px;
+  min-height: 80px;
+  max-height: 70%;
+  border-top: 1px solid var(--border);
+}
 .console-line {
   font-family: var(--font-code);
   font-size: var(--text-sm);
@@ -801,13 +1109,13 @@ kbd {
     min-height: 160px;
   }
 
-  .queues-area {
+  /* .queues-area {
     grid-column: 1;
     grid-row: 2;
     grid-template-columns: 1fr;
     grid-template-rows: auto auto auto;
     height: auto;
-  }
+  } */
 
   .queue-panel {
     min-height: 120px;
@@ -844,4 +1152,62 @@ kbd {
   .shortcuts-bar {
     display: none;
   }
+}
+/* ── THEME TOGGLE BUTTON ── */
+#btn-theme {
+  background: transparent;
+  border: 1px solid var(--border-light);
+  border-radius: 6px;
+  padding: 6px 10px;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  color: var(--text-muted);
+  transition: border-color 0.2s, color 0.2s;
+  flex-shrink: 0;
+}
+
+#btn-theme:hover {
+  border-color: var(--purple);
+  color: var(--purple);
+}
+/* ── DRAG HANDLE ── */
+.drag-handle {
+
+  grid-column: 2;
+  grid-row: 2;
+  height: 5px;
+  background: var(--border);
+  cursor: row-resize;
+  flex-shrink: 0;
+  position: relative;
+  transition: background 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.drag-handle:hover {
+  background: var(--purple-dim);
+}
+
+.drag-handle::after {
+  content: '';
+  width: 32px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--border-light);
+  transition: background 0.2s;
+}
+
+.drag-handle:hover::after {
+  background: var(--purple);
+}
+
+.drag-handle.dragging {
+  background: var(--purple-dark);
+}
+
+.drag-handle.dragging::after {
+  background: var(--purple);
 }
